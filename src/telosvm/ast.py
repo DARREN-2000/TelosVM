@@ -1,5 +1,7 @@
-from typing import List, Union, Literal, Optional
+from typing import Literal, Union
+
 from pydantic import BaseModel
+
 
 class DeclareNode(BaseModel):
     type: Literal["Declare"]
@@ -9,7 +11,7 @@ class DeclareNode(BaseModel):
 class AssignNode(BaseModel):
     type: Literal["Assign"]
     var: str
-    value: Union[int, str]
+    value: int | str
 
 class MathOpNode(BaseModel):
     type: Literal["MathOp"]
@@ -21,13 +23,13 @@ class MathOpNode(BaseModel):
 class IfNode(BaseModel):
     type: Literal["If"]
     condition_var: str
-    then_body: List['TelosNode']
-    else_body: Optional[List['TelosNode']] = None
+    then_body: list['TelosNode']
+    else_body: list['TelosNode'] | None = None
 
 class WhileNode(BaseModel):
     type: Literal["While"]
     condition_var: str
-    body: List['TelosNode']
+    body: list['TelosNode']
 
 class CallBuiltinNode(BaseModel):
     type: Literal["CallBuiltin"]
@@ -45,4 +47,4 @@ WhileNode.model_rebuild()
 class ModuleNode(BaseModel):
     type: Literal["Module"]
     id: str
-    nodes: List[TelosNode]
+    nodes: list[TelosNode]

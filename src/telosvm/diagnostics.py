@@ -1,9 +1,9 @@
 import json
+
+from pydantic import ValidationError
 from rich.console import Console
 from rich.panel import Panel
 from rich.text import Text
-from pydantic import ValidationError
-from typing import Optional
 
 console = Console()
 

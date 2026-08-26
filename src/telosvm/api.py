@@ -1,15 +1,16 @@
 import logging
+from typing import Any
+
 from fastapi import FastAPI, HTTPException, Request
-from pydantic import BaseModel
-from typing import Dict, Any
 from opentelemetry import trace
+from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
 from opentelemetry.sdk.trace import TracerProvider
 from opentelemetry.sdk.trace.export import BatchSpanProcessor, ConsoleSpanExporter
-from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
+from pydantic import BaseModel
 
 from .compiler import TelosVMCompiler
+from .core import HallucinationError, TelosCompilationError, TelosExecutionError
 from .executor import WasmExecutor
-from .core import TelosCompilationError, HallucinationError, TelosExecutionError
 
 # Set up Enterprise OpenTelemetry Tracing
 trace.set_tracer_provider(TracerProvider())
@@ -52,7 +53,7 @@ def health_check():
     return {"status": "healthy"}
 
 @app.post("/compile", response_model=CompileResponse)
-def compile_llm_intent(payload: Dict[str, Any]):
+def compile_llm_intent(payload: dict[str, Any]):
     import json
     try:
         ast = compiler.parse_and_verify(json.dumps(payload))
@@ -66,7 +67,7 @@ def compile_llm_intent(payload: Dict[str, Any]):
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.post("/execute")
-def execute_compiled_wat(payload: Dict[str, str]):
+def execute_compiled_wat(payload: dict[str, str]):
     wat_code = payload.get("wat_code")
     if not wat_code: raise HTTPException(status_code=400, detail="Missing 'wat_code' field.")
     try:

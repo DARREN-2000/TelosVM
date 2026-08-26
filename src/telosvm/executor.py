@@ -1,5 +1,6 @@
 from .core import TelosExecutionError
 
+
 class WasmExecutor:
     """Executes the compiled WebAssembly in a strict, zero-trust sandbox using Wasmtime."""
     @staticmethod

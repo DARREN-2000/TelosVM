@@ -1,8 +1,11 @@
-import pytest
 import json
+
+import pytest
+
 from src.telosvm.compiler import TelosVMCompiler
+from src.telosvm.core import HallucinationError
 from src.telosvm.executor import WasmExecutor
-from src.telosvm.core import HallucinationError, TelosCompilationError
+
 
 @pytest.fixture
 def compiler():

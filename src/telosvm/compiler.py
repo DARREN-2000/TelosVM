@@ -1,7 +1,9 @@
 from pydantic import ValidationError
+
 from .ast import ModuleNode
 from .core import TelosCompilationError
-from .passes import SemanticVerifier, ASTOptimizer, WATGenerator
+from .passes import ASTOptimizer, SemanticVerifier, WATGenerator
+
 
 class TelosVMCompiler:
     def __init__(self):

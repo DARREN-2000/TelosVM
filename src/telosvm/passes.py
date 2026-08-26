@@ -1,6 +1,7 @@
-from typing import List
+
 from .ast import *
-from .core import NodeVisitor, HallucinationError
+from .core import HallucinationError, NodeVisitor
+
 
 class SemanticVerifier(NodeVisitor):
     def __init__(self):
@@ -52,7 +53,7 @@ class ASTOptimizer(NodeVisitor):
         self.constants.clear()
         module.nodes = self.optimize_block(module.nodes)
 
-    def optimize_block(self, nodes: List[TelosNode]) -> List[TelosNode]:
+    def optimize_block(self, nodes: list[TelosNode]) -> list[TelosNode]:
         optimized = []
         for node in nodes:
             # Check conditions BEFORE visit (since visit might clear constants)
@@ -140,22 +141,22 @@ class WATGenerator(NodeVisitor):
         wat.append(")")
         return "\n".join(wat)
 
-    def visit_Declare(self, node: DeclareNode, indent: int) -> List[str]:
+    def visit_Declare(self, node: DeclareNode, indent: int) -> list[str]:
         ind = " " * indent
         return [f'{ind}i32.const {node.value}', f'{ind}local.set ${node.var}']
 
-    def visit_Assign(self, node: AssignNode, indent: int) -> List[str]:
+    def visit_Assign(self, node: AssignNode, indent: int) -> list[str]:
         ind = " " * indent
         lines = [f'{ind}i32.const {node.value}'] if isinstance(node.value, int) else [f'{ind}local.get ${node.value}']
         lines.append(f'{ind}local.set ${node.var}')
         return lines
 
-    def visit_MathOp(self, node: MathOpNode, indent: int) -> List[str]:
+    def visit_MathOp(self, node: MathOpNode, indent: int) -> list[str]:
         ind = " " * indent
         op_map = {"add": "i32.add", "sub": "i32.sub", "mul": "i32.mul", "div": "i32.div_s"}
         return [f'{ind}local.get ${node.left}', f'{ind}local.get ${node.right}', f'{ind}{op_map[node.operator]}', f'{ind}local.set ${node.target}']
 
-    def visit_If(self, node: IfNode, indent: int) -> List[str]:
+    def visit_If(self, node: IfNode, indent: int) -> list[str]:
         ind = " " * indent
         lines = [f'{ind}local.get ${node.condition_var}', f'{ind}if']
         for child in node.then_body: lines.extend(self.visit(child, indent + 2))
@@ -165,7 +166,7 @@ class WATGenerator(NodeVisitor):
         lines.append(f'{ind}end')
         return lines
 
-    def visit_While(self, node: WhileNode, indent: int) -> List[str]:
+    def visit_While(self, node: WhileNode, indent: int) -> list[str]:
         ind = " " * indent
         lbl = self.label_counter
         self.label_counter += 1
@@ -174,10 +175,10 @@ class WATGenerator(NodeVisitor):
         lines.extend([f'{ind}    br $loop_{lbl}', f'{ind}  end', f'{ind}end'])
         return lines
 
-    def visit_CallBuiltin(self, node: CallBuiltinNode, indent: int) -> List[str]:
+    def visit_CallBuiltin(self, node: CallBuiltinNode, indent: int) -> list[str]:
         ind = " " * indent
         return [f'{ind}local.get ${node.arg_var}', f'{ind}call ${node.function}']
 
-    def visit_Return(self, node: ReturnNode, indent: int) -> List[str]:
+    def visit_Return(self, node: ReturnNode, indent: int) -> list[str]:
         ind = " " * indent
         return [f'{ind}local.get ${node.var}', f'{ind}return']

@@ -1,19 +1,19 @@
-import sys
 import json
+from pathlib import Path
+
 import typer
+from rich import box
+from rich.align import Align
 from rich.console import Console, Group
 from rich.panel import Panel
-from rich.text import Text
-from rich.align import Align
-from rich.table import Table
-from rich.syntax import Syntax
-from rich import box
-from pathlib import Path
 from rich.progress import Progress, SpinnerColumn, TextColumn
+from rich.syntax import Syntax
+from rich.table import Table
+from rich.text import Text
 
 from .compiler import TelosVMCompiler
+from .core import HallucinationError, TelosCompilationError, TelosExecutionError
 from .executor import WasmExecutor
-from .core import TelosCompilationError, HallucinationError, TelosExecutionError
 
 app = typer.Typer(help="TelosVM: AI-Native Compiler & Execution Control Plane", no_args_is_help=False)
 console = Console()
@@ -139,9 +139,11 @@ def run(
             print(json.dumps({"error": e.__class__.__name__, "detail": str(e)}))
             raise typer.Exit(1)
             
-        from src.telosvm.diagnostics import DiagnosticEngine
         import json as json_lib
+
         from pydantic import ValidationError
+
+        from src.telosvm.diagnostics import DiagnosticEngine
         
         # If the file couldn't be read, source is missing
         source = json_content if 'json_content' in locals() else ""

@@ -1,5 +1,7 @@
 from typing import Any
+
 from .ast import TelosNode
+
 
 class TelosCompilationError(Exception): pass
 class HallucinationError(TelosCompilationError): pass

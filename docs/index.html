@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TelosVM Playground</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/gh/AssemblyScript/wabt.js/index.js"></script>
+</head>
+<body>
+    <div class="playground-container">
+        <!-- Header -->
+        <header class="header">
+            <div>
+                <h1 style="display:inline; font-size:1.2rem;">TelosVM <span class="text-gradient">Playground</span></h1>
+            </div>
+            <div>
+                <button class="btn btn-accent" id="compile-btn">Compile Intent</button>
+                <button class="btn btn-primary" id="run-btn" disabled>Execute Wasm</button>
+            </div>
+        </header>
+
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="panel">
+                <h3 style="margin-bottom: 8px; font-size:14px;">Status</h3>
+                <div style="display:flex; align-items:center; font-size:12px;">
+                    <div id="status-dot" class="status-indicator"></div>
+                    <span id="status-text" style="color:var(--text-secondary);">Awaiting Compilation...</span>
+                </div>
+            </div>
+            <div class="panel" style="flex:1;">
+                <h3 style="margin-bottom: 8px; font-size:14px;">Architecture</h3>
+                <p style="font-size:12px; color:var(--text-muted); line-height:1.6;">
+                    1. <strong>Semantic Verifier</strong> catches hallucinations.<br><br>
+                    2. <strong>AST Optimizer</strong> folds constants.<br><br>
+                    3. <strong>WAT Generator</strong> lowers to WebAssembly.
+                </p>
+            </div>
+        </aside>
+
+        <!-- Editor Area (JSON) -->
+        <main class="editor-container">
+            <div class="editor-header">
+                <span>intent.json</span>
+                <span>Telos Abstract Syntax Tree</span>
+            </div>
+            <textarea id="json-input" class="code-area" spellcheck="false">
+{
+  "type": "Module",
+  "id": "main",
+  "nodes": [
+    { "type": "Declare", "var": "counter", "value": 5 },
+    { "type": "Declare", "var": "result", "value": 1 },
+    {
+      "type": "While",
+      "condition_var": "counter",
+      "body": [
+        { "type": "MathOp", "target": "result", "operator": "mul", "left": "result", "right": "counter" },
+        { "type": "CallBuiltin", "function": "print", "arg_var": "result" },
+        { "type": "Declare", "var": "one", "value": 1 },
+        { "type": "MathOp", "target": "counter", "operator": "sub", "left": "counter", "right": "one" }
+      ]
+    },
+    { "type": "Return", "var": "result" }
+  ]
+}</textarea>
+        </main>
+
+        <!-- Preview Area (WAT) -->
+        <section class="preview-container">
+            <div class="editor-header">
+                <span>compiled.wat</span>
+                <span>WebAssembly Text</span>
+            </div>
+            <textarea id="wat-output" class="code-area" spellcheck="false" readonly></textarea>
+        </section>
+
+        <!-- Terminal -->
+        <footer class="terminal" id="terminal">
+            <div class="terminal-line"><span class="terminal-prompt">~</span><span class="terminal-output">TelosVM v2.4.0-edge initialized.</span></div>
+            <div class="terminal-line"><span class="terminal-prompt">~</span><span class="terminal-output">Waiting for input...</span></div>
+        </footer>
+    </div>
+    
+    <script src="script.js"></script>
+</body>
+</html>

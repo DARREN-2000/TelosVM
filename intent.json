@@ -1,0 +1,19 @@
+{
+  "type": "Module",
+  "id": "main",
+  "nodes": [
+    { "type": "Declare", "var": "counter", "value": 5 },
+    { "type": "Declare", "var": "result", "value": 1 },
+    {
+      "type": "While",
+      "condition_var": "counter",
+      "body": [
+        { "type": "MathOp", "target": "result", "operator": "mul", "left": "result", "right": "counter" },
+        { "type": "CallBuiltin", "function": "print", "arg_var": "result" },
+        { "type": "Declare", "var": "one", "value": 1 },
+        { "type": "MathOp", "target": "counter", "operator": "sub", "left": "counter", "right": "one" }
+      ]
+    },
+    { "type": "Return", "var": "result" }
+  ]
+}

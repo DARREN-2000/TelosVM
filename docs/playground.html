@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TelosVM | Playground</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/gh/AssemblyScript/wabt.js/index.js"></script>
+</head>
+<body>
+
+
+    <main class="landing">
+        <section class="playground-wrapper">
+            <div class="playground-header">
+                <h2>Interactive Compiler</h2>
+                <div class="playground-actions">
+                    <button class="btn" id="compile-btn">Compile</button>
+                    <button class="btn btn-primary" id="run-btn" disabled>Execute</button>
+                </div>
+            </div>
+
+            <div class="playground-grid">
+                <div class="editor-pane">
+                    <div class="pane-header">
+                        <span class="filename">intent.json</span>
+                        <span class="status" id="status-text">Awaiting</span>
+                    </div>
+                    <textarea id="json-input" class="code-area" spellcheck="false">
+{
+  "type": "Module",
+  "id": "main",
+  "nodes": [
+    { "type": "Declare", "var": "counter", "value": 5 },
+    { "type": "Declare", "var": "result", "value": 1 },
+    {
+      "type": "While",
+      "condition_var": "counter",
+      "body": [
+        { "type": "MathOp", "target": "result", "operator": "mul", "left": "result", "right": "counter" },
+        { "type": "CallBuiltin", "function": "print", "arg_var": "result" },
+        { "type": "Declare", "var": "one", "value": 1 },
+        { "type": "MathOp", "target": "counter", "operator": "sub", "left": "counter", "right": "one" }
+      ]
+    },
+    { "type": "Return", "var": "result" }
+  ]
+}</textarea>
+                </div>
+
+                <div class="editor-pane">
+                    <div class="pane-header">
+                        <span class="filename">compiled.wat</span>
+                    </div>
+                    <textarea id="wat-output" class="code-area" spellcheck="false" readonly></textarea>
+                </div>
+            </div>
+
+            <div class="terminal-pane">
+                <div class="pane-header">
+                    <span class="filename">Output</span>
+                </div>
+                <div class="terminal-content" id="terminal">
+                    <div class="terminal-line"><span class="terminal-output">TelosVM initialized. Browser sandbox ready.</span></div>
+                </div>
+            </div>
+        </section>
+    </main>
+    
+    <script src="script.js"></script>
+</body>
+</html>

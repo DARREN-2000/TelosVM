@@ -3,86 +3,190 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TelosVM Playground</title>
-    <link rel="stylesheet" href="style.css">
-    <script src="https://cdn.jsdelivr.net/gh/AssemblyScript/wabt.js/index.js"></script>
-</head>
-<body>
-    <div class="playground-container">
-        <!-- Header -->
-        <header class="header">
-            <div>
-                <h1 style="display:inline; font-size:1.2rem;">TelosVM <span class="text-gradient">Playground</span></h1>
-            </div>
-            <div>
-                <button class="btn btn-accent" id="compile-btn">Compile Intent</button>
-                <button class="btn btn-primary" id="run-btn" disabled>Execute Wasm</button>
-            </div>
-        </header>
+    <title>TelosVM - AI Intent Compiler</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #000;
+            color: #fff;
+            -webkit-font-smoothing: antialiased;
+        }
 
-        <!-- Sidebar -->
-        <aside class="sidebar">
-            <div class="panel">
-                <h3 style="margin-bottom: 8px; font-size:14px;">Status</h3>
-                <div style="display:flex; align-items:center; font-size:12px;">
-                    <div id="status-dot" class="status-indicator"></div>
-                    <span id="status-text" style="color:var(--text-secondary);">Awaiting Compilation...</span>
+        .text-gradient-primary {
+            background: linear-gradient(to right, #fff, #71717a);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .bg-glow {
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 800px;
+            height: 400px;
+            background: rgba(255, 255, 255, 0.05);
+            filter: blur(120px);
+            border-radius: 50%;
+            z-index: -1;
+            pointer-events: none;
+            animation: pulse-glow 10s ease-in-out infinite alternate;
+        }
+
+        @keyframes pulse-glow {
+            0% { transform: translateX(-50%) scale(1); opacity: 0.3; }
+            50% { transform: translateX(-50%) scale(1.05); opacity: 0.5; }
+            100% { transform: translateX(-50%) scale(1); opacity: 0.3; }
+        }
+
+        /* Playground Expand Animation */
+        #playground-container {
+            max-height: 0;
+            opacity: 0;
+            overflow: hidden;
+            transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+            transform: translateY(40px);
+        }
+
+        #playground-container.open {
+            max-height: 1000px; /* Arbitrary large height */
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .mac-window {
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 0.75rem;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(24px);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            overflow: hidden;
+        }
+
+        .mac-header {
+            height: 2.5rem;
+            background: rgba(255, 255, 255, 0.05);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            display: flex;
+            align-items: center;
+            padding: 0 1rem;
+            gap: 0.5rem;
+        }
+
+        .mac-dot {
+            width: 0.75rem;
+            height: 0.75rem;
+            border-radius: 50%;
+            background-color: #27272a;
+        }
+    </style>
+</head>
+<body class="min-h-screen relative overflow-x-hidden flex items-center justify-center">
+
+    <div class="bg-glow"></div>
+
+    <section class="relative pt-32 pb-20 md:pt-48 md:pb-32 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 z-10">
+        <div class="text-center max-w-4xl mx-auto flex flex-col items-center">
+            
+            <!-- Badge -->
+            <div class="mb-8 px-4 py-1.5 rounded-full border border-zinc-800 bg-zinc-900/50 inline-flex items-center gap-2 text-sm font-medium text-zinc-300">
+                <span class="relative flex h-2 w-2">
+                    <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-zinc-400 opacity-75"></span>
+                    <span class="relative inline-flex rounded-full h-2 w-2 bg-zinc-500"></span>
+                </span>
+                TelosVM v2.5.0 is now generally available
+                <i data-lucide="arrow-right" class="w-3 h-3 ml-1"></i>
+            </div>
+
+            <!-- Title -->
+            <h1 class="text-5xl md:text-7xl lg:text-8xl font-bold tracking-tighter mb-8 leading-[1.1]">
+                The enterprise <br />
+                <span class="text-gradient-primary">AI Intent Compiler</span>
+            </h1>
+
+            <!-- Subtitle -->
+            <p class="text-lg md:text-xl text-zinc-400 mb-10 max-w-2xl mx-auto font-medium leading-relaxed">
+                A lightweight compiler pipeline that validates typed JSON intent, performs semantic analysis, lowers programs to WebAssembly, and executes them in a zero-trust sandbox.
+            </p>
+
+            <!-- Buttons -->
+            <div class="flex flex-col sm:flex-row gap-4 w-full sm:w-auto justify-center">
+                <button id="toggle-btn" class="inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors bg-white text-black hover:bg-zinc-200 h-11 px-8 py-2 gap-2">
+                    Try it out <i data-lucide="arrow-right" class="w-4 h-4" id="btn-icon"></i>
+                </button>
+                <a href="https://github.com/DARREN-2000/TelosVM" class="inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors border border-zinc-800 bg-transparent hover:bg-zinc-900 h-11 px-8 py-2 gap-2">
+                    <i data-lucide="terminal" class="w-4 h-4"></i> View Source
+                </a>
+            </div>
+        </div>
+
+        <!-- Playground Container -->
+        <div id="playground-container" class="mt-20 relative mx-auto max-w-5xl">
+            <div class="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent z-10 bottom-0 h-1/3 pointer-events-none"></div>
+            
+            <div class="mac-window relative">
+                <!-- Mac Header -->
+                <div class="mac-header relative">
+                    <div class="mac-dot"></div>
+                    <div class="mac-dot"></div>
+                    <div class="mac-dot"></div>
+                    <div class="flex-1 flex justify-center text-xs text-zinc-500 font-mono">
+                        telos-playground
+                    </div>
+                    <button id="close-btn" class="text-zinc-500 hover:text-white absolute right-4 focus:outline-none">
+                        <i data-lucide="x" class="w-4 h-4"></i>
+                    </button>
+                </div>
+
+                <!-- Iframe containing the actual playground -->
+                <div class="relative w-full h-[650px] overflow-hidden bg-black/50">
+                    <iframe 
+                        src="playground.html" 
+                        class="w-full h-full border-0" 
+                        title="TelosVM Playground"
+                        loading="lazy">
+                    </iframe>
                 </div>
             </div>
-            <div class="panel" style="flex:1;">
-                <h3 style="margin-bottom: 8px; font-size:14px;">Architecture</h3>
-                <p style="font-size:12px; color:var(--text-muted); line-height:1.6;">
-                    1. <strong>Semantic Verifier</strong> catches hallucinations.<br><br>
-                    2. <strong>AST Optimizer</strong> folds constants.<br><br>
-                    3. <strong>WAT Generator</strong> lowers to WebAssembly.
-                </p>
-            </div>
-        </aside>
+        </div>
+    </section>
 
-        <!-- Editor Area (JSON) -->
-        <main class="editor-container">
-            <div class="editor-header">
-                <span>intent.json</span>
-                <span>Telos Abstract Syntax Tree</span>
-            </div>
-            <textarea id="json-input" class="code-area" spellcheck="false">
-{
-  "type": "Module",
-  "id": "main",
-  "nodes": [
-    { "type": "Declare", "var": "counter", "value": 5 },
-    { "type": "Declare", "var": "result", "value": 1 },
-    {
-      "type": "While",
-      "condition_var": "counter",
-      "body": [
-        { "type": "MathOp", "target": "result", "operator": "mul", "left": "result", "right": "counter" },
-        { "type": "CallBuiltin", "function": "print", "arg_var": "result" },
-        { "type": "Declare", "var": "one", "value": 1 },
-        { "type": "MathOp", "target": "counter", "operator": "sub", "left": "counter", "right": "one" }
-      ]
-    },
-    { "type": "Return", "var": "result" }
-  ]
-}</textarea>
-        </main>
+    <script>
+        // Initialize icons
+        lucide.createIcons();
 
-        <!-- Preview Area (WAT) -->
-        <section class="preview-container">
-            <div class="editor-header">
-                <span>compiled.wat</span>
-                <span>WebAssembly Text</span>
-            </div>
-            <textarea id="wat-output" class="code-area" spellcheck="false" readonly></textarea>
-        </section>
+        const toggleBtn = document.getElementById('toggle-btn');
+        const closeBtn = document.getElementById('close-btn');
+        const container = document.getElementById('playground-container');
+        const btnIcon = document.getElementById('btn-icon');
+        let isOpen = false;
 
-        <!-- Terminal -->
-        <footer class="terminal" id="terminal">
-            <div class="terminal-line"><span class="terminal-prompt">~</span><span class="terminal-output">TelosVM v2.4.0-edge initialized.</span></div>
-            <div class="terminal-line"><span class="terminal-prompt">~</span><span class="terminal-output">Waiting for input...</span></div>
-        </footer>
-    </div>
-    
-    <script src="script.js"></script>
+        function togglePlayground() {
+            isOpen = !isOpen;
+            if (isOpen) {
+                container.classList.add('open');
+                toggleBtn.innerHTML = 'Try it out <i data-lucide="x" class="w-4 h-4 ml-2"></i>';
+                lucide.createIcons(); // re-render icon
+                
+                // Scroll down slightly for better view
+                setTimeout(() => {
+                    container.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }, 100);
+            } else {
+                container.classList.remove('open');
+                toggleBtn.innerHTML = 'Try it out <i data-lucide="arrow-right" class="w-4 h-4 ml-2"></i>';
+                lucide.createIcons();
+            }
+        }
+
+        toggleBtn.addEventListener('click', togglePlayground);
+        closeBtn.addEventListener('click', () => {
+            if(isOpen) togglePlayground();
+        });
+    </script>
 </body>
 </html>

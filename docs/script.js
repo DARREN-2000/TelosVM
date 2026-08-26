@@ -126,8 +126,8 @@ document.getElementById('compile-btn').addEventListener('click', () => {
 });
 
 function logToTerminal(msg, type='log-msg') {
-    const term = document.getElementById('terminal');
-    term.innerHTML += `<span class="${type}">${msg}</span><br>`;
+    const term = document.querySelector('.terminal-content');
+    term.innerHTML += `<div class="terminal-line"><span class="terminal-output ${type}">${msg}</span></div>`;
     term.scrollTop = term.scrollHeight;
 }
 
